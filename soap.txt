@@ -1,0 +1,128 @@
+https://restcountries.eu/rest/v2/all
+
+http://www.dneonline.com/calculator.asmx?wsdl
+
+AUTOMATE:-
+import groovy.json.JsonSlurper
+//post
+testRunner.testCase.testSuite.setPropertyValue("id","3452")
+testRunner.testCase.testSuite.setPropertyValue("name","babaiq")
+testRunner.testCase.testSuite.setPropertyValue("tagid","0411")
+testRunner.testCase.testSuite.setPropertyValue("tagname","deepuq")
+testRunner.testCase.testSuite.setPropertyValue("status","pending")
+def tCase = testRunner.testCase.testSuite.testCases["TestCase"]
+
+def getIdTestStep = tCase.testSteps["POST"]
+def as1=getIdTestStep.run(testRunner,context)
+def responseJson = getIdTestStep.testRequest.response.responseContent
+log.info(responseJson)
+
+//get
+def getIdTestStep1 = tCase.testSteps["GET"]
+def as6=getIdTestStep1.run(testRunner,context)
+def responseJson1 = getIdTestStep1.testRequest.response.responseContent
+JsonSlurper slurper = new JsonSlurper()
+def parsedJson = slurper.parseText(responseJson1)
+String id1
+def flag=0
+for(def str:parsedJson)
+{
+	
+if(str.get("tags").get(0).get("name").toString().equals("deepu"))
+{
+	id1=str.id
+flag=1
+break;
+}
+}
+if(flag==1)
+{
+	log.info(id1)
+log.info("posted")
+}
+else
+{
+log.info("Not posted")
+}
+
+//put
+
+testRunner.testCase.testSuite.setPropertyValue("id","345200")
+testRunner.testCase.testSuite.setPropertyValue("name","babai00")
+testRunner.testCase.testSuite.setPropertyValue("tagid","041100")
+testRunner.testCase.testSuite.setPropertyValue("tagname","deepu000")
+testRunner.testCase.testSuite.setPropertyValue("status","pending00")
+
+def getIdTestStep2 = tCase.testSteps["PUT"]
+def as2=getIdTestStep2.run(testRunner,context)
+def responseJson2 = getIdTestStep2.testRequest.response.responseContent
+log.info(responseJson2)
+def ass2=as2.getStatus().toString()
+
+//get
+def getIdTestStep3 = tCase.testSteps["GET"]
+def as7=getIdTestStep3.run(testRunner,context)
+def responseJson3 = getIdTestStep3.testRequest.response.responseContent
+JsonSlurper slurper1 = new JsonSlurper()
+def parsedJson1 = slurper1.parseText(responseJson3)
+//log.info(parsedJson1)
+//String value10=parsedJson1.body.description
+def flag1=0
+for(def str1:parsedJson1)
+{
+if(str1.get("tags").get(0).get("name").equals("deepu000"))
+{
+flag1=1
+}
+else
+{
+flag1=0
+}
+}
+if(flag1==1)
+{
+log.info("successfully updated")
+}
+else
+{
+log.info("Not Updated")
+}
+
+
+//delete
+testRunner.testCase.testSuite.setPropertyValue("deleteid",id1)
+def getIdTestStep4 = tCase.testSteps["DELETE"]
+def as3=getIdTestStep4.run(testRunner,context)
+def responseJson4 = getIdTestStep4.testRequest.response.responseContent
+//log.info(responseJson4)
+
+
+//get
+def getIdTestStep5 = tCase.testSteps["GET"]
+def as8=getIdTestStep5.run(testRunner,context)
+def responseJson5 = getIdTestStep5.testRequest.response.responseContent
+JsonSlurper slurper3 = new JsonSlurper()
+def parsedJson4 = slurper.parseText(responseJson1)
+log.info(parsedJson4)
+def flag2=0
+for(def str6:parsedJson4)
+{
+if(str6.get("tags").get(0).get("name").equals("deepu000"))
+{
+flag2=0
+}
+else
+{
+flag2=1
+}
+}
+if(flag2==0)
+{
+log.info("not deleted")
+}
+else
+{
+log.info("deleted")
+}
+
+

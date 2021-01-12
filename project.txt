@@ -1,0 +1,184 @@
+import groovy.json.JsonSlurper
+import jxl.*
+import java.io.*
+
+Workbook wb = Workbook.getWorkbook(new
+File("C:\\Users\\Souvik\\Desktop\\excel.xls"))
+Sheet sh= wb.getSheet(0)
+
+rc= sh.getRows()
+cc=sh.getColumns()
+
+i=0
+for(j=0;j<cc;j++)
+{
+Cell var=sh.getCell(j,i)
+}
+
+
+//post
+
+def tCase = testRunner.testCase.testSuite.testCases["TestCase"]
+
+
+testRunner.testCase.testSuite.setPropertyValue("name",sh.getCell(0,0).getContents())
+testRunner.testCase.testSuite.setPropertyValue("age",sh.getCell(1,0).getContents())
+testRunner.testCase.testSuite.setPropertyValue("gender",sh.getCell(2,0).getContents())
+testRunner.testCase.testSuite.setPropertyValue("email",sh.getCell(3,0).getContents())
+testRunner.testCase.testSuite.setPropertyValue("address",sh.getCell(4,0).getContents())
+testRunner.testCase.testSuite.setPropertyValue("contact",sh.getCell(5,0).getContents())
+testRunner.testCase.testSuite.setPropertyValue("qualification",sh.getCell(6,0).getContents())
+testRunner.testCase.testSuite.setPropertyValue("employeeType",sh.getCell(7,0).getContents())
+testRunner.testCase.testSuite.setPropertyValue("yearsOfExperience",sh.getCell(8,0).getContents())
+testRunner.testCase.testSuite.setPropertyValue("aadhaarNo",sh.getCell(9,0).getContents())
+testRunner.testCase.testSuite.setPropertyValue("img","file:C:\\Users\\Souvik\\Desktop\\img.jpg")
+
+def getIdTestStep = tCase.testSteps["POST"]
+def as1=getIdTestStep.run(testRunner,context)
+def responseJson =
+getIdTestStep.testRequest.response.responseContent
+log.info(responseJson)
+
+
+//get
+def getIdTestStepFirst = tCase.testSteps["GET"]
+def asFirst=getIdTestStepFirst.run(testRunner,context)
+def responseJsonFirst =
+getIdTestStepFirst.testRequest.response.responseContent
+JsonSlurper slurperFirst = new JsonSlurper()
+def parsedJsonFirst = slurperFirst.parseText(responseJsonFirst)
+log.info(parsedJsonFirst)
+//String valueFirst=parsedJsonFirst.body.description
+def flagFirst=0
+def id
+for(def strFirst:parsedJsonFirst)
+{
+if(strFirst.get("name").toString().equals(sh.getCell(0,0).getContents()))
+{
+	id=strFirst.get("id").toString()
+	log.info("..................................")
+	log.info(id)
+	log.info("..................................")
+flagFirst=1
+}
+
+}
+if(flagFirst==1)
+{
+log.info("Staff found")
+}
+else
+{
+log.info("Staff not found")
+}
+
+//put
+testRunner.testCase.testSuite.setPropertyValue("staffId",id.toString())
+testRunner.testCase.testSuite.setPropertyValue("email","babaihlr@gmail.com")
+testRunner.testCase.testSuite.setPropertyValue("employeeType","Frontdesk Staff")
+def getIdTestStep2 = tCase.testSteps["Update FrontDesk"]
+def as2=getIdTestStep2.run(testRunner,context)
+def responseJson2 =
+getIdTestStep2.testRequest.response.responseContent
+log.info(responseJson2)
+def ass2=as2.getStatus().toString()
+
+
+//get
+ getIdTestStepFirst = tCase.testSteps["GET"]
+ testRunner.testCase.testSuite.setPropertyValue("employeeType","Frontdesk Staff")
+ asFirst=getIdTestStepFirst.run(testRunner,context)
+ responseJsonFirst =
+getIdTestStepFirst.testRequest.response.responseContent
+ slurperFirst = new JsonSlurper()
+ parsedJsonFirst = slurperFirst.parseText(responseJsonFirst)
+log.info(parsedJsonFirst)
+
+ flagFirst=0
+
+
+if(parsedJsonFirst.get("age").toString().equals("23"))
+{
+	
+flagFirst=1
+}
+
+
+if(flagFirst==1)
+{
+log.info("staff Updated")
+}
+else
+{
+log.info("staff not Updated")
+}
+
+
+
+////delete
+testRunner.testCase.testSuite.setPropertyValue("staffType","Frontdesk Staff")
+def getIdTestStep4 = tCase.testSteps["Delete FrontDesk"]
+def as3=getIdTestStep4.run(testRunner,context)
+def responseJson4 =
+getIdTestStep4.testRequest.response.responseContent
+log.info(responseJson4)
+
+//get
+
+def getIdTestStep5 = tCase.testSteps["GET"]
+def as8=getIdTestStep5.run(testRunner,context)
+def responseJson5 =
+getIdTestStep5.testRequest.response.responseContent
+JsonSlurper slurper3 = new JsonSlurper()
+def parsedJson4 = slurper3.parseText(responseJson5)
+log.info(parsedJson4)
+def flag2=0
+for(def str6:parsedJson4)
+{
+if((str6).get("id").toString().equals(id.toString()))
+{
+flag2=1
+}
+
+}
+if(flag2==1)
+{
+log.info("not deleted")
+}
+else
+{
+log.info("deleted")
+}
+
+//JDBC
+
+testRunner.testCase.testSuite.setPropertyValue("con","com.mysql.jdbc.Driver")
+testRunner.testCase.testSuite.setPropertyValue("constr","jdbc:mysql://mongosql1.eastus2.cloudapp.azure.com/jyoti_dentalclinic_sep_20_dev")
+testRunner.testCase.testSuite.setPropertyValue("query","select patient.patient_id from patient;")
+testRunner.testCase.testSuite.setPropertyValue("uname","sqluser20")
+testRunner.testCase.testSuite.setPropertyValue("pwd","Mind@1234\$")
+def teststep2=tCase.testSteps["JDBC Req"]
+teststep2.run(testRunner,context)
+def JDBC=teststep2.testRequest.response.responseContent
+def groovyUtils=new com.eviware.soapui.support.GroovyUtils(context)
+def xml=groovyUtils.getXmlHolder(JDBC)
+for(obj in xml.getNodeValues("//PATIENT.PATIENT_ID"))
+{
+if(obj.equals("6"))  //3
+{
+flag=1
+break;
+}
+else
+{
+flag=0
+}
+}
+if(flag==1)
+{
+log.info("present")
+}
+else
+{
+log.info("not present")
+}

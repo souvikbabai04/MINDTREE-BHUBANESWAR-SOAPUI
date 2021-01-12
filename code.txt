@@ -1,0 +1,176 @@
+import groovy.json.JsonSlurper
+import jxl.*
+import java.io.*
+
+def tCase = testRunner.testCase.testSuite.testCases["TestCase"]
+String id1	
+Sheet sh= readExcel()
+AppointmentDetail(tCase,sh)
+getAllPatient(tCase)
+getConnection(tCase)
+updateAppointmentDetail(tCase)
+getDetailAfterUpdation(tCase)
+getDetailAfterDelete(tCase)
+
+
+Sheet readExcel(){	
+	Workbook wb = Workbook.getWorkbook(new
+	File("C:\\Users\\Souvik\\Desktop\\excel.xls"))
+	Sheet sh= wb.getSheet(0)
+	rc= sh.getRows()
+	cc=sh.getColumns()
+	return sh
+}
+def getConnection(def tCase){
+	testRunner.testCase.testSuite.setPropertyValue("con","com.mysql.jdbc.Driver")
+	testRunner.testCase.testSuite.setPropertyValue("constr","jdbc:mysql://mongosql1.eastus2.cloudapp.azure.com/jyoti_dentalclinic_sep_20_dev")
+	testRunner.testCase.testSuite.setPropertyValue("query","select DENTIST.NAME from dentist;")
+	testRunner.testCase.testSuite.setPropertyValue("uname","sqluser20")
+	testRunner.testCase.testSuite.setPropertyValue("pwd","Mind@1234\$")
+	def teststep2=tCase.testSteps["JDBC Req"]
+	teststep2.run(testRunner,context)
+	def JDBC=teststep2.testRequest.response.responseContent
+	def groovyUtils=new com.eviware.soapui.support.GroovyUtils(context)
+	def xml=groovyUtils.getXmlHolder(JDBC)
+	for(obj in xml.getNodeValues("//DENTIST.NAME"))
+	{
+	if(obj.equals("Shreya S"))
+	{
+	flag=1
+	break;
+	}
+	else
+	{
+	flag=0
+	}
+	}
+	if(flag==1)
+	{
+	log.info("present")
+	}
+	else
+	{
+	log.info("not present")
+	}
+}
+//post
+def AppointmentDetail(def tCase, Sheet sh){
+	testRunner.testCase.testSuite.setPropertyValue("dentistId",sh.getCell(0,0).getContents())
+	testRunner.testCase.testSuite.setPropertyValue("dentistName",sh.getCell(1,0).getContents())
+	testRunner.testCase.testSuite.setPropertyValue("patientId",sh.getCell(2,0).getContents())
+	testRunner.testCase.testSuite.setPropertyValue("patientName",sh.getCell(3,0).getContents())
+	testRunner.testCase.testSuite.setPropertyValue("appdate",sh.getCell(4,0).getContents())
+	testRunner.testCase.testSuite.setPropertyValue("apptime",sh.getCell(5,0).getContents())
+	def getIdTestStep = tCase.testSteps["BookAppointment"]
+	def as1=getIdTestStep.run(testRunner,context)
+	def responseJson =
+	getIdTestStep.testRequest.response.responseContent
+	log.info(responseJson)
+}
+//get
+def getAllPatient(def tCase){
+	def getIdTestStep1 = tCase.testSteps["getAllPatient"]
+	def as6=getIdTestStep1.run(testRunner,context)
+	def responseJson1 =
+	getIdTestStep1.testRequest.response.responseContent
+	JsonSlurper slurper = new JsonSlurper()
+	def parsedJson = slurper.parseText(responseJson1)
+	def flag=0
+	for(def str:parsedJson)
+	{
+		if(str.patientName.equals("Swetha"))
+		{
+			id1=str.id
+			testRunner.testCase.testSuite.setPropertyValue("id",id1.toString())
+			flag=1
+		}
+	}
+	if(flag==1)
+	{
+	log.info("Appointment Booked")
+	}
+	else
+	{
+		log.info("Patient is NOT FOUND")
+	}
+}
+////put
+def updateAppointmentDetail(def tCase){
+	testRunner.testCase.testSuite.setPropertyValue("patientId",sh.getCell(2,0).getContents())
+	testRunner.testCase.testSuite.setPropertyValue("patientName",sh.getCell(3,0).getContents())
+	testRunner.testCase.testSuite.setPropertyValue("upappDate",sh.getCell(6,0).getContents())
+	testRunner.testCase.testSuite.setPropertyValue("upappTime",sh.getCell(7,0).getContents())
+	def getIdTestStep3 = tCase.testSteps["updateAppointment"]	
+	def as2=getIdTestStep3.run(testRunner,context)
+	def responseJson3 =
+	getIdTestStep3.testRequest.response.responseContent
+	log.info(responseJson3)
+	def ass2=as2.getStatus().toString()
+}
+//get
+def getDetailAfterUpdation(def tCase){
+	def getIdTestStep2 = tCase.testSteps["getAllPatient"]
+	def as7=getIdTestStep2.run(testRunner,context)
+	def responseJson2 =
+	getIdTestStep2.testRequest.response.responseContent
+	JsonSlurper slurper1 = new JsonSlurper()
+	def parsedJson1 = slurper1.parseText(responseJson2)
+	String id2
+	flag=0
+	for(def str:parsedJson1)
+	{
+	if(str.patientName.equals("Swetha"))
+	{
+	flag=1
+	break
+	}
+	}
+	if(flag==1)
+	{
+	log.info("updation of Appointment successfull")
+	}
+	else
+	{
+	log.info("Not updated")
+	}
+}
+
+//delete
+def deleteAppointmentDetail(def tCase){
+	def getIdTestStep4 = tCase.testSteps["DeleteAppointment"]
+	def as3=getIdTestStep4.run(testRunner,context)
+	def responseJson4 =
+	getIdTestStep4.testRequest.response.responseContent
+	log.info(responseJson4)
+}
+
+//get
+def getDetailAfterDelete(def tCase){
+	def getIdTestStep5 = tCase.testSteps["getAllPatient"]
+	def as8=getIdTestStep5.run(testRunner,context)
+	def responseJson5 =
+	getIdTestStep5.testRequest.response.responseContent
+	JsonSlurper slurper3 = new JsonSlurper()
+	def parsedJson4 = slurper3.parseText(responseJson5)
+	log.info(parsedJson4)
+	def flag2=0
+	for(def str6:parsedJson4)
+	{
+	if(str.patientName.equals("Swetha"))
+	{
+	flag2=0
+	}
+	else
+	{
+	flag2=1
+	}
+	}
+	if(flag2==0)
+	{
+	log.info("Cannot Delete Appointment")
+	}
+	else
+	{
+	log.info("delete Appointment")
+	}
+}
